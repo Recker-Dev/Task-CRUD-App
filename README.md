@@ -1,6 +1,4 @@
-Here’s a clean, internship-quality `README.md` you can directly paste into your project.
 
-````md
 # WorkTrack API
 
 A scalable RESTful backend API for employee task management with authentication, role-based access control, and task workflow management.
@@ -367,7 +365,6 @@ Email: admin@company.com
 Password: admin123
 ```
 
----
 
 
 ```
