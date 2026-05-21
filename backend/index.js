@@ -15,12 +15,13 @@ import { createOrSkipAdminCreation } from "./config/index.js";
 // Routes
 import { router as userRouter } from "./routes/users.js";
 import { router as taskRouter } from "./routes/tasks.js";
+import { router as authRouter } from "./routes/auth.js";
 
 // Swagger imports
 import { swaggerUi, swaggerSpec } from "./swagger.js";
 
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: ["http://localhost:5173", "http://localhost:3000"],
   credentials: true,
 };
 
@@ -42,6 +43,7 @@ app.get("/", (req, res) => {
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Mounting routes
+app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/tasks", taskRouter);
 

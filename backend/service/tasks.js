@@ -25,15 +25,15 @@ export const createNewTask = async ({
     nt.status,
     nt.created_by,
     u.id as assigned_to_id,
-    u.name as assigned_to_name,
+    u.full_name as assigned_to_name,
     u.role as assigned_to_role
 
-    FROM new_task nt
+    FROM new_task as nt
     INNER JOIN 
-    ${USERS_TABLE} u ON nt.assigned_to = u.id;
+    ${USERS_TABLE} as u ON nt.assigned_to = u.id;
     `;
 
-  const rows = await db.query(query, [
+  const { rows } = await pool.query(query, [
     title,
     description,
     assignedToId,
@@ -75,7 +75,7 @@ export const getAllTasks = async ({ status = null, assignedToId = null }) => {
     ${whereClause};
     `;
 
-  const rows = await db.query(query);
+  const { rows } = await pool.query(query, values);
   return rows;
 };
 
@@ -97,7 +97,7 @@ export const getTask = async ({ id }) => {
     WHERE t.id = $1;
     `;
 
-  const rows = await db.query(query, [id]);
+  const { rows } = await pool.query(query, [id]);
   return rows[0];
 };
 
@@ -153,7 +153,7 @@ export const updateTask = async ({
     RETURNING *;
   `;
 
-  const { rows } = await db.query(query, values);
+  const { rows } = await pool.query(query, values);
   return rows[0];
 };
 
@@ -183,5 +183,45 @@ export const approveTaskCompletion = async ({ id }) => {
     `;
 
   const { rows } = await pool.query(query, [id]);
+  return rows[0];
+};
+
+
+// Get tasks for a userId
+export const getTaskByUser = async ({ userId }) => {
+  const query = `
+    SELECT 
+      id,
+      title,
+      description,
+      status,
+      completion_note
+    FROM ${TASKS_TABLE}
+    WHERE assigned_to = $1
+    ORDER BY created_at;
+  `;
+
+  const { rows } = await pool.query(query, [userId]);
+  return rows;
+};
+
+// Request Task completion
+export const requestTaskCompletion = async ({ userId, taskId, completionNote }) => {
+  const query = `
+    UPDATE ${TASKS_TABLE}
+    SET 
+      status = 'COMPLETED_REQUESTED',
+      completion_note = $1,
+      updated_at = NOW()
+    WHERE id = $2 AND assigned_to = $3
+    RETURNING 
+      id,
+      title,
+      status,
+      completion_note;
+  `;
+
+  const { rows } = await pool.query(query, [completionNote, taskId, userId]);
+
   return rows[0];
 };
